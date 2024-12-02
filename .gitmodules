@@ -1,0 +1,3 @@
+[submodule "smart_home"]
+	path = smart_home
+	url = git@github.com:DyakonovAlex/smart_home.git

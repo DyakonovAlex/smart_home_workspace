@@ -1,0 +1,9 @@
+[package]
+name = "smart_socket_client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+smart_home = { path = "../smart_home" }
+smart_socket_server = { path = "../smart_socket_server" }
+ctrlc = "3.4.5"

@@ -1,0 +1,4 @@
+[workspace]
+members = ["smart_home", "smart_socket_client", "smart_socket_server"]
+
+resolver = "2"
