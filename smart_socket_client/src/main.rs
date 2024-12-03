@@ -91,6 +91,12 @@ impl<T: Stream> SmartSocketClient<T> {
             ProtocolError::ConnectionError(format!("Failed to read response: {}", e))
         })?;
 
+        // Добавляем вывод сырых данных
+        self.log(&format!(
+            "Raw response data: {:?}",
+            String::from_utf8_lossy(&buffer[..size])
+        ));
+
         let response_str = String::from_utf8_lossy(&buffer[..size]).to_string();
         let response = Response::from_str(&response_str)?;
         self.log(&format!("Received response: {:?}", response));
@@ -194,6 +200,7 @@ fn main() {
     ctrlc::set_handler(move || {
         println!("\nShutdown signal received, closing connection...");
         r.store(false, Ordering::SeqCst);
+        std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");
 
