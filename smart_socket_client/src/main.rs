@@ -1,7 +1,7 @@
-use ctrlc;
 use smart_socket_server::{Command, ProtocolError, Response};
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpStream};
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};

@@ -1,8 +1,8 @@
-use ctrlc;
 use smart_home::devices::socket::Socket;
 use smart_socket_server::{Command, ProtocolError, Response};
 use std::io::{self, Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;

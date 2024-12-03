@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub enum Command {
@@ -38,8 +39,10 @@ impl fmt::Display for ProtocolError {
 
 impl Error for ProtocolError {}
 
-impl Command {
-    pub fn from_str(s: &str) -> Result<Command, ProtocolError> {
+impl FromStr for Command {
+    type Err = ProtocolError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.trim() {
             "ON" => Ok(Command::TurnOn),
             "OFF" => Ok(Command::TurnOff),
@@ -49,7 +52,6 @@ impl Command {
         }
     }
 }
-
 impl fmt::Display for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -61,21 +63,12 @@ impl fmt::Display for Command {
     }
 }
 
-impl Response {
-    pub fn to_string(&self) -> String {
-        match self {
-            Response::Ok(msg) => format!("OK:{}", msg),
-            Response::Status { is_on, power } => {
-                format!("STATUS:{}:{}", if *is_on { "ON" } else { "OFF" }, power)
-            }
-            Response::Info(info) => format!("INFO:{}", info),
-            Response::Error(err) => format!("ERROR:{}", err),
-        }
-    }
+impl FromStr for Response {
+    type Err = ProtocolError;
 
-    pub fn from_str(s: &str) -> Result<Response, ProtocolError> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.splitn(2, ':').collect();
-        match parts.get(0) {
+        match parts.first() {
             Some(&"OK") => Ok(Response::Ok(
                 parts
                     .get(1)
@@ -90,7 +83,7 @@ impl Response {
                     .collect();
 
                 let is_on = status_parts
-                    .get(0)
+                    .first()
                     .ok_or_else(|| ProtocolError::ParseError("Missing status state".to_string()))?
                     == &"ON";
 
@@ -116,6 +109,19 @@ impl Response {
             )),
             Some(unknown) => Err(ProtocolError::InvalidResponse(unknown.to_string())),
             None => Err(ProtocolError::ParseError("Empty response".to_string())),
+        }
+    }
+}
+
+impl fmt::Display for Response {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Response::Ok(msg) => write!(f, "OK:{}", msg),
+            Response::Status { is_on, power } => {
+                write!(f, "STATUS:{}:{}", if *is_on { "ON" } else { "OFF" }, power)
+            }
+            Response::Info(info) => write!(f, "INFO:{}", info),
+            Response::Error(err) => write!(f, "ERROR:{}", err),
         }
     }
 }
