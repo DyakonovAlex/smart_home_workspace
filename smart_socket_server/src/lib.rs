@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt;
+use std::io::Read;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -124,4 +125,29 @@ impl fmt::Display for Response {
             Response::Error(err) => write!(f, "ERROR:{}", err),
         }
     }
+}
+
+pub fn serialize_message(message: &str) -> Vec<u8> {
+    let length = message.len() as u32;
+    let mut buffer = Vec::with_capacity(4 + length as usize);
+    buffer.extend_from_slice(&length.to_be_bytes());
+    buffer.extend_from_slice(message.as_bytes());
+    buffer
+}
+
+pub fn read_message<R: Read>(reader: &mut R) -> Result<String, ProtocolError> {
+    let mut length_bytes = [0u8; 4];
+    reader.read_exact(&mut length_bytes).map_err(|e| {
+        ProtocolError::ConnectionError(format!("Failed to read message length: {}", e))
+    })?;
+
+    let length = u32::from_be_bytes(length_bytes) as usize;
+    let mut buffer = vec![0u8; length];
+
+    reader
+        .read_exact(&mut buffer)
+        .map_err(|e| ProtocolError::ConnectionError(format!("Failed to read message: {}", e)))?;
+
+    String::from_utf8(buffer)
+        .map_err(|e| ProtocolError::ParseError(format!("Invalid UTF-8: {}", e)))
 }

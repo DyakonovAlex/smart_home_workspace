@@ -1,4 +1,4 @@
-use smart_socket_server::{Command, ProtocolError, Response};
+use smart_socket_server::{read_message, serialize_message, Command, ProtocolError, Response};
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpStream};
 use std::str::FromStr;
@@ -78,26 +78,14 @@ impl<T: Stream> SmartSocketClient<T> {
     fn send_command(&mut self, command: Command) -> Result<Response, ProtocolError> {
         self.log(&format!("Sending command: {:?}", command));
 
-        self.stream
-            .write(command.to_string().as_bytes())
-            .map_err(|e| {
-                self.log(&format!("Failed to send command: {}", e));
-                ProtocolError::ConnectionError(format!("Failed to send command: {}", e))
-            })?;
-
-        let mut buffer = [0; 1024];
-        let size = self.stream.read(&mut buffer).map_err(|e| {
-            self.log(&format!("Failed to read response: {}", e));
-            ProtocolError::ConnectionError(format!("Failed to read response: {}", e))
+        let message = command.to_string();
+        let data = serialize_message(&message);
+        self.stream.write_all(&data).map_err(|e| {
+            self.log(&format!("Failed to send command: {}", e));
+            ProtocolError::ConnectionError(format!("Failed to send command: {}", e))
         })?;
 
-        // Добавляем вывод сырых данных
-        self.log(&format!(
-            "Raw response data: {:?}",
-            String::from_utf8_lossy(&buffer[..size])
-        ));
-
-        let response_str = String::from_utf8_lossy(&buffer[..size]).to_string();
+        let response_str = read_message(&mut self.stream)?;
         let response = Response::from_str(&response_str)?;
         self.log(&format!("Received response: {:?}", response));
 
