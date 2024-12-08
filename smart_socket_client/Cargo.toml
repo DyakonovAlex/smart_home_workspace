@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-smart_home = { path = "../smart_home" }
+smart_home = { workspace = true }
 smart_socket_server = { path = "../smart_socket_server" }
 ctrlc = "3.4.5"

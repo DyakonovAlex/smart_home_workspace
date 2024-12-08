@@ -1,8 +1,9 @@
 [package]
-name = "smart_socket_server"
+name = "thermometer_client"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 smart_home = { workspace = true }
 ctrlc = "3.4.5"
+rand = "0.8.5"

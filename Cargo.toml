@@ -1,4 +1,12 @@
 [workspace]
-members = ["smart_home", "smart_socket_client", "smart_socket_server"]
-
+members = [
+    "smart_home",
+    "smart_socket_server",
+    "smart_socket_client",
+    "thermometer_server",
+    "thermometer_client"
+]
 resolver = "2"
+
+[workspace.dependencies]
+smart_home = { path = "smart_home" }

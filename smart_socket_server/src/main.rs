@@ -30,12 +30,7 @@ fn handle_client(mut stream: TcpStream, socket: Arc<Mutex<Socket>>) -> Result<()
         .unwrap_or_else(|_| "unknown".parse().unwrap());
     log(&format!("New client connected: {}", peer_addr));
 
-    loop {
-        let command_str = match read_message(&mut stream) {
-            Ok(msg) => msg,
-            Err(_) => break,
-        };
-
+    while let Ok(command_str) = read_message(&mut stream) {
         log(&format!(
             "Received command from {}: {}",
             peer_addr, command_str
@@ -82,6 +77,7 @@ fn handle_client(mut stream: TcpStream, socket: Arc<Mutex<Socket>>) -> Result<()
             break;
         }
     }
+
     Ok(())
 }
 #[derive(Debug)]
